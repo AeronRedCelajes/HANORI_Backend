@@ -13,15 +13,13 @@ return new class extends Migration
     {
         Schema::create('class', function (Blueprint $table) {
 					$table->id('classID');
-					$table->string('activityID');
+					$table->string('actID');
 					$table->string('teacherID');
 					$table->string('studentID');
 					$table->string('annID');
 					$table->string('conID');
 					$table->string('className');
-					$table->string('classDesc');
 					$table->string('classCode');
-					$table->string('students');
         });
     }
 

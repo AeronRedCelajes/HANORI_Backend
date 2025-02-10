@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('assessment', function (Blueprint $table) {
             $table->id('assessmentID');
-            $table->string('activityID');
+            $table->string('actID');
             $table->string('testCases');
             $table->string('submittedCode');
             $table->string('result');
             $table->string('executionTime');
+            $table->string('progLang');
         });
     }
 

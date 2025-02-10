@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('question', function (Blueprint $table) {
             $table->id('questionID');
-            $table->string('activityID');
-            $table->string('questionText');
+            $table->string('actID');
+            $table->string('questionDesc');
             $table->string('difficulty');
+            $table->string('questionCont');
         });
     }
 

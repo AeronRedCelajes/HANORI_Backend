@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('announcement', function (Blueprint $table) {
             $table->id('annID');
             $table->string('classID');
-            $table->string('annName');
+            $table->string('annTitle');
             $table->string('annDesc');
         });
     }

@@ -12,16 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('activity', function (Blueprint $table) {
-            $table->id('activityID');
+            $table->id('actID');
             $table->string('classID');
             $table->string('teacherID');
             $table->string('questionID');
             $table->string('assessmentID');
-            $table->string('activityName');
-            $table->string('description');
+            $table->string('actTitle');
+            $table->string('actDesc');
+            $table->string('difficulty');
             $table->string('startDate');
             $table->string('endDate');
-            $table->string('difficulty');
+            $table->string('progLang');
+
             // $table->timestamps();
         });
     }

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id('conID');
             $table->string('classID');
             $table->string('studentID');
-            $table->string('conName');
             $table->string('conDesc');
         });
     }
