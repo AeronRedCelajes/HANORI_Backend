@@ -11,8 +11,11 @@ class Students extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
 
+	protected $primaryKey = 'studentID'; // Explicitly set the primary key
+
 		protected $fillable = [
-			'name',
+			'firstname',
+			'lastname',
 			'email',
 			'password'
 		];
@@ -27,4 +30,6 @@ class Students extends Authenticatable
 				'password' => 'hashed'
 			];
 		}
+
+		public $timestamps = false;
 }

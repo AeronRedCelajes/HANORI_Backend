@@ -12,21 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('teachers', function (Blueprint $table) {
-					$table->id('teacherID');
-					// $table->timestamps();
-					$table->string('firstname');
-					$table->string('lastname');
-					$table->string('email')->unique();
-					$table->string('password');
-					$table->string('profileImage')->nullable();
-					$table->string('coverImage')->nullable();
+            $table->id('teacherID');
+            // $table->timestamps();
+            $table->string('firstname');
+            $table->string('lastname');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('profileImage')->nullable();
+            $table->string('coverImage')->nullable();
         });
 
-				Schema::create('teacher_password_reset_tokens', function(Blueprint $table) {
-					$table->string('email')->primary();
-					$table->string('token');
-					$table->string('created_at');
-				});
+        Schema::create('teacher_password_reset_tokens', function(Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->string('created_at');
+        });
     }
 
     /**

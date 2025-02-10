@@ -1,21 +1,22 @@
 <?php
 
-use App\Http\Controllers\Api\StudentsController;
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::apiResource('students', StudentsController::class);
+Route::controller(AuthController::class)->group(function () {
+    Route::post('/register', 'register'); // Universal register route
+    Route::post('/login', 'login');       // Universal login route
 
-Route::controller(StudentsController::class)->group(function()
-{
-	Route::post('/students/register', 'register');
-	Route::post('/students/login', 'login');
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', 'logout'); // Logout route for authenticated users
 
-	Route::middleware('auth:sanctum')->group(function()
-	{
-		Route::post('/students/logout', 'logout');
-		Route::get('/students', function (Request $request){
-			return $request->user();
-		});
-	});
+        // Get user details (student or teacher)
+        Route::get('/user', function (Request $request) {
+            return response()->json([
+                'user' => $request->user(),
+                'user_type' => str_ends_with($request->user()->email, '@student.edu') ? 'student' : 'teacher',
+            ]);
+        });
+    });
 });
