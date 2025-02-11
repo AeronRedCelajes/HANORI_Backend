@@ -86,8 +86,9 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        \Log::info('Login Attempt:', $request->all());
+        \Log::info('Login Attempt:', ['email' => $request->email]);
     
+        // Validate request input
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:8',
@@ -110,19 +111,13 @@ class AuthController extends Controller
         }
     
         // Find user in respective table
-        $user = ($userType === 'student') ? 
-            Students::where('email', $request->email)->first() : 
-            Teachers::where('email', $request->email)->first();
+        $user = $userType === 'student' 
+            ? Students::where('email', $request->email)->first() 
+            : Teachers::where('email', $request->email)->first();
     
-        // If user does not exist, return "User not found"
-        if (!$user) {
-            return response()->json([
-                'message' => 'User not found.',
-            ], 404);
-        }
-    
-        // If password does not match, return "Invalid email or password"
-        if (!Hash::check($request->password, $user->password)) {
+        // Unified error message to prevent email enumeration
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            \Log::warning('Failed login attempt', ['email' => $request->email]);
             return response()->json([
                 'message' => 'Invalid email or password.',
             ], 401);
@@ -132,20 +127,23 @@ class AuthController extends Controller
         try {
             $token = $user->createToken('auth_token')->plainTextToken;
         } catch (\Exception $e) {
-            \Log::error('Token Creation Error: ' . $e->getMessage());
+            \Log::error('Token Creation Error:', ['email' => $request->email, 'error' => $e->getMessage()]);
             return response()->json([
-                'message' => 'Failed to generate token.',
-                'error' => $e->getMessage(),
+                'message' => 'Failed to generate token. Please try again.',
             ], 500);
         }
     
+        \Log::info('Login Success', ['email' => $request->email, 'user_type' => $userType]);
+    
+        // Return success response
         return response()->json([
             'message' => 'Login Success',
             'user_type' => $userType,
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 200);
-    }    
+    }
+          
 
     public function logout()
     {
