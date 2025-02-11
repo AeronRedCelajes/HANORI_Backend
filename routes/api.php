@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\ProfileStudentController;
+use App\Http\Controllers\ProfileTeacherController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +19,18 @@ Route::controller(AuthController::class)->group(function () {
                 'user' => $request->user(),
                 'user_type' => str_ends_with($request->user()->email, '@student.edu') ? 'student' : 'teacher',
             ]);
+        });
+
+        // 📌 Student Profile Routes
+        Route::prefix('profile/students')->group(function () {
+            Route::get('{id}', [ProfileStudentController::class, 'show']); // Get student profile
+            Route::put('{id}', [ProfileStudentController::class, 'update']); // Update student profile
+        });
+
+        // 📌 Teacher Profile Routes
+        Route::prefix('profile/teachers')->group(function () {
+            Route::get('{id}', [ProfileTeacherController::class, 'show']); // Get teacher profile
+            Route::put('{id}', [ProfileTeacherController::class, 'update']); // Update teacher profile
         });
     });
 });
