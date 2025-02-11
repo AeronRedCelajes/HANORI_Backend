@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Students;
+use App\Models\Student;
 
 class ProfileStudentController extends Controller
 {
     // 📌 GET Student Profile
     public function show($id)
     {
-        $student = Students::find($id);
+        $student = Student::find($id);
         if (!$student) {
             return response()->json(['message' => 'Student not found'], 404);
         }
@@ -20,7 +20,7 @@ class ProfileStudentController extends Controller
     // 📌 UPDATE Student Profile
     public function update(Request $request, $id)
     {
-        $student = Students::find($id);
+        $student = Student::find($id);
         if (!$student) {
             return response()->json(['message' => 'Student not found'], 404);
         }

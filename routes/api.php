@@ -6,31 +6,37 @@ use App\Http\Controllers\ProfileTeacherController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// 📌 Authentication Routes
 Route::controller(AuthController::class)->group(function () {
-    Route::post('/register', 'register'); // Universal register route
-    Route::post('/login', 'login');       // Universal login route
+    Route::post('/register/student', 'registerStudent'); // Register Student
+    Route::post('/register/teacher', 'registerTeacher'); // Register Teacher
+    Route::post('/login', 'login');                      // Login for both roles
+});
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/logout', 'logout'); // Logout route for authenticated users
+// 📌 Protected Routes (Requires Authentication via Sanctum)
+Route::middleware('auth:sanctum')->group(function () {
 
-        // Get user details (student or teacher)
-        Route::get('/user', function (Request $request) {
-            return response()->json([
-                'user' => $request->user(),
-                'user_type' => str_ends_with($request->user()->email, '@student.edu') ? 'student' : 'teacher',
-            ]);
-        });
+    // 🔹 Logout
+    Route::post('/logout', [AuthController::class, 'logout']); 
 
-        // 📌 Student Profile Routes
-        Route::prefix('profile/students')->group(function () {
-            Route::get('{id}', [ProfileStudentController::class, 'show']); // Get student profile
-            Route::put('{id}', [ProfileStudentController::class, 'update']); // Update student profile
-        });
+    // 🔹 Get Authenticated User (Student or Teacher)
+    Route::get('/user', function (Request $request) {
+        $user = $request->user();
+        return response()->json([
+            'user' => $user,
+            'user_type' => $user instanceof \App\Models\Student ? 'student' : 'teacher',
+        ]);
+    });
 
-        // 📌 Teacher Profile Routes
-        Route::prefix('profile/teachers')->group(function () {
-            Route::get('{id}', [ProfileTeacherController::class, 'show']); // Get teacher profile
-            Route::put('{id}', [ProfileTeacherController::class, 'update']); // Update teacher profile
-        });
+    // 📌 Student Profile Routes
+    Route::prefix('profile/students')->group(function () {
+        Route::get('{student_num}', [ProfileStudentController::class, 'show']);   // Get student profile
+        Route::put('{student_num}', [ProfileStudentController::class, 'update']); // Update student profile
+    });
+
+    // 📌 Teacher Profile Routes
+    Route::prefix('profile/teachers')->group(function () {
+        Route::get('{id}', [ProfileTeacherController::class, 'show']);   // Get teacher profile
+        Route::put('{id}', [ProfileTeacherController::class, 'update']); // Update teacher profile
     });
 });

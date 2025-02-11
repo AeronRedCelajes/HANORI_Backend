@@ -17,9 +17,11 @@ return new class extends Migration
 					$table->string('firstname');
 					$table->string('lastname');
           $table->string('email')->unique();
-					$table->string('password');
-					$table->string('profileImage')->nullable();
-					$table->string('coverImage')->nullable();
+          $table->string('student_num')->unique();// Enforce uniqueness
+          $table->enum('program', ['BSCS', 'BSIT', 'BSEMC', 'BSIS']); // Restrict values
+          $table->string('password');
+          $table->string('profileImage')->nullable();
+          $table->string('coverImage')->nullable();
         });
 
 				Schema::create('student_password_reset_tokens', function(Blueprint $table) {

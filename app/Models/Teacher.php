@@ -7,17 +7,21 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Teachers extends Authenticatable
+class Teacher extends Authenticatable
 {
 	use HasFactory, Notifiable, HasApiTokens;
 
+	protected $table = 'teachers'; // Explicit table name
 	protected $primaryKey = 'teacherID'; // Explicitly set the primary key
+	public $timestamps = false; // Disable timestamps
 
 	protected $fillable = [
 		'firstname',
 		'lastname',
 		'email',
-		'password'
+		'password',
+		'profileImage',
+        'coverImage'
 	];
 
 	protected $hidden = [
@@ -30,6 +34,4 @@ class Teachers extends Authenticatable
 			'password' => 'hashed'
 		];
 	}
-
-	public $timestamps = false;
 }

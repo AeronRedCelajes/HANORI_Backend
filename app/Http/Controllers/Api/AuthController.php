@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Students;
-use App\Models\Teachers;
+use App\Models\Student;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -13,117 +13,120 @@ use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
-    // Function to determine if the email belongs to a student or a teacher
-    private function getUserTypeByEmail($email)
+    // Student Registration
+    public function registerStudent(Request $request)
     {
-        if (str_ends_with($email, '@student.edu')) {
-            return 'student';
-        } elseif (str_ends_with($email, '@teacher.edu')) {
-            return 'teacher';
-        } else {
-            return null; // Invalid email format
-        }
-    }
-
-    public function register(Request $request)
-    {
-        \Log::info('Register Request Data:', $request->all());
+        \Log::info('Student Register Request:', $request->all());
 
         $validator = Validator::make($request->all(), [
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => [
-                'required', 'email',
+                'required', 'email', 'regex:/@neu\.edu\.ph$/',
                 Rule::unique('students', 'email'),
-                Rule::unique('teachers', 'email')
+                Rule::unique('teachers', 'email'),
             ],
+            'student_num' => ['required', 'regex:/^\d{2}-\d{5}-\d{3}$/'],
+            'program' => ['required', Rule::in(['BSCS', 'BSIT', 'BSEMC', 'BSIS'])],
             'password' => 'required|string|min:8'
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'All fields are mandatory',
+                'message' => 'Validation failed',
                 'errors' => $validator->errors(),
             ], 422);
         }
 
-        // Determine user type based on email format
-        $userType = $this->getUserTypeByEmail($request->email);
+        $user = Student::create([
+            'firstname' => $request->firstname,
+            'lastname' => $request->lastname,
+            'email' => $request->email,
+            'student_num' => $request->student_num,
+            'program' => $request->program,
+            'password' => Hash::make($request->password),
+        ]);
 
-        if (!$userType) {
-            return response()->json([
-                'message' => 'Invalid email format. Use @student.edu or @teacher.edu',
-            ], 422);
-        }
-
-        // Create user based on type
-        if ($userType === 'student') {
-            $user = Students::create([
-                'firstname' => $request->firstname,
-                'lastname' => $request->lastname,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
-        } else {
-            $user = Teachers::create([
-                'firstname' => $request->firstname,
-                'lastname' => $request->lastname,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
-        }
-
-        // Generate API token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'data' => $user,
-            'user_type' => $userType,
+            'message' => 'Student registered successfully',
+            'user_type' => 'student',
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 201);
     }
 
-    public function login(Request $request)
+    // Teacher Registration
+    public function registerTeacher(Request $request)
     {
-        \Log::info('Login Attempt:', ['email' => $request->email]);
-    
-        // Validate request input
+        \Log::info('Teacher Register Request:', $request->all());
+
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'email' => [
+                'required', 'email', 'regex:/@neu\.edu\.ph$/',
+                Rule::unique('students', 'email'),
+                Rule::unique('teachers', 'email'),
+            ],
             'password' => 'required|string|min:8',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'All fields are mandatory',
+                'message' => 'Validation failed',
                 'errors' => $validator->errors(),
             ], 422);
         }
-    
-        // Determine user type based on email format
-        $userType = $this->getUserTypeByEmail($request->email);
-    
-        if (!$userType) {
+
+        $user = Teacher::create([
+            'firstname' => $request->firstname,
+            'lastname' => $request->lastname,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Teacher registered successfully',
+            'user_type' => 'teacher',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 201);
+    }
+
+    // Login Method
+    public function login(Request $request)
+    {
+        \Log::info('Login Attempt:', ['email' => $request->email]);
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|regex:/@neu\.edu\.ph$/',
+            'password' => 'required|string|min:8',
+        ]);
+
+        if ($validator->fails()) {
             return response()->json([
-                'message' => 'Invalid email format. Use @student.edu or @teacher.edu',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
             ], 422);
         }
-    
-        // Find user in respective table
-        $user = $userType === 'student' 
-            ? Students::where('email', $request->email)->first() 
-            : Teachers::where('email', $request->email)->first();
-    
-        // Unified error message to prevent email enumeration
+
+        // Check if user exists in either table
+        $student = Student::where('email', $request->email)->first();
+        $teacher = Teacher::where('email', $request->email)->first();
+        $user = $student ?? $teacher;
+        $userType = $student ? 'student' : ($teacher ? 'teacher' : null);
+
         if (!$user || !Hash::check($request->password, $user->password)) {
             \Log::warning('Failed login attempt', ['email' => $request->email]);
             return response()->json([
                 'message' => 'Invalid email or password.',
             ], 401);
         }
-    
-        // Generate API token
+
         try {
             $token = $user->createToken('auth_token')->plainTextToken;
         } catch (\Exception $e) {
@@ -132,19 +135,18 @@ class AuthController extends Controller
                 'message' => 'Failed to generate token. Please try again.',
             ], 500);
         }
-    
+
         \Log::info('Login Success', ['email' => $request->email, 'user_type' => $userType]);
-    
-        // Return success response
+
         return response()->json([
-            'message' => 'Login Success',
+            'message' => 'Login Successful',
             'user_type' => $userType,
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 200);
     }
-          
 
+    // Logout Method
     public function logout()
     {
         Auth::user()->tokens()->delete();
