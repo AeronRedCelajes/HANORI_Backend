@@ -101,32 +101,39 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         \Log::info('Login Attempt:', ['email' => $request->email]);
-
+    
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|regex:/@neu\.edu\.ph$/',
             'password' => 'required|string|min:8',
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $validator->errors(),
             ], 422);
         }
-
+    
         // Check if user exists in either table
         $student = Student::where('email', $request->email)->first();
         $teacher = Teacher::where('email', $request->email)->first();
         $user = $student ?? $teacher;
         $userType = $student ? 'student' : ($teacher ? 'teacher' : null);
-
+    
+        \Log::info('User Data:', [
+            'userType' => $userType,
+            'studentID' => $student ? $student->studentID : null,
+            'teacherID' => $teacher ? $teacher->teacherID : null,
+            'email' => $user ? $user->email : 'Not Found'
+        ]);
+    
         if (!$user || !Hash::check($request->password, $user->password)) {
             \Log::warning('Failed login attempt', ['email' => $request->email]);
             return response()->json([
                 'message' => 'Invalid email or password.',
             ], 401);
         }
-
+    
         try {
             $token = $user->createToken('auth_token')->plainTextToken;
         } catch (\Exception $e) {
@@ -135,16 +142,26 @@ class AuthController extends Controller
                 'message' => 'Failed to generate token. Please try again.',
             ], 500);
         }
+    
+        \Log::info('Login Success', [
+            'email' => $request->email,
+            'user_type' => $userType,
+            'studentID' => $student ? $student->studentID : null,
+            'teacherID' => $teacher ? $teacher->teacherID : null
 
-        \Log::info('Login Success', ['email' => $request->email, 'user_type' => $userType]);
-
+        ]);
+    
         return response()->json([
             'message' => 'Login Successful',
             'user_type' => $userType,
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'password' => $request->password, // TEMPORARY: Remove after debugging
+            'studentID' => $student ? $student->studentID : null,  // Correct primary key
+            'teacherID' => $teacher ? $teacher->teacherID : null   // Correct primary key
         ], 200);
     }
+    
 
     // Logout Method
     public function logout()

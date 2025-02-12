@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\ProfileStudentController;
-use App\Http\Controllers\ProfileTeacherController;
+use App\Http\Controllers\Api\ProfileStudentController;
+use App\Http\Controllers\Api\ProfileTeacherController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,15 +28,14 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
-    // 📌 Student Profile Routes
-    Route::prefix('profile/students')->group(function () {
-        Route::get('{student_num}', [ProfileStudentController::class, 'show']);   // Get student profile
-        Route::put('{student_num}', [ProfileStudentController::class, 'update']); // Update student profile
-    });
+    // 📌 Profile Student Routes (All Singular)
+    Route::get('/profile/student/{student}', [ProfileStudentController::class, 'show']);
+    Route::put('/profile/student/{student}', [ProfileStudentController::class, 'update']); 
+    Route::delete('/profile/student/{student}', [ProfileStudentController::class, 'destroy']);
 
-    // 📌 Teacher Profile Routes
-    Route::prefix('profile/teachers')->group(function () {
-        Route::get('{id}', [ProfileTeacherController::class, 'show']);   // Get teacher profile
-        Route::put('{id}', [ProfileTeacherController::class, 'update']); // Update teacher profile
-    });
+    // 📌 Profile Teacher Routes (All Singular)
+    Route::get('/profile/teacher/{teacher}', [ProfileTeacherController::class, 'show']);
+    Route::put('/profile/teacher/{teacher}', [ProfileTeacherController::class, 'update']); 
+    Route::delete('/profile/teacher/{teacher}', [ProfileTeacherController::class, 'destroy']);
+
 });
