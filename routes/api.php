@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\ProfileTeacherController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
+
 // 📌 Authentication Routes
 Route::controller(AuthController::class)->group(function () {
     Route::post('/register/student', 'registerStudent'); // Register Student
