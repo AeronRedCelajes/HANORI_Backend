@@ -34,4 +34,12 @@ class Teacher extends Authenticatable
 			'password' => 'hashed'
 		];
 	}
+
+	    /**
+     * Get the classes created by the teacher.
+     */
+    public function classes()
+    {
+        return $this->hasMany(Classroom::class, 'teacherID', 'teacherID');
+    }
 }
