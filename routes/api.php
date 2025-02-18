@@ -3,10 +3,9 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProfileStudentController;
 use App\Http\Controllers\Api\ProfileTeacherController;
+use App\Http\Controllers\Api\ClassroomController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-
 
 // 📌 Authentication Routes
 Route::controller(AuthController::class)->group(function () {
@@ -40,4 +39,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile/teacher/{teacher}', [ProfileTeacherController::class, 'update']); 
     Route::delete('/profile/teacher/{teacher}', [ProfileTeacherController::class, 'destroy']);
 
+    // 📌 Classroom Management Routes (For Teachers Only)
+    Route::controller(ClassroomController::class)->group(function () {
+        Route::get('/classes', 'index'); // Get all classes
+        Route::post('/classes', 'store'); // Create a class (Only for teachers)
+        Route::get('/classes/{id}', 'show'); // Get class details
+        Route::delete('/classes/{id}', 'destroy'); // Delete a class (Only for teachers)
+    });
+
+    // 📌 Student Enrollment Routes (Students Joining Classes)
+    Route::post('/classes/{classID}/enroll', [ClassroomController::class, 'enrollStudent']);
+    Route::delete('/classes/{classID}/unenroll', [ClassroomController::class, 'unenrollStudent']);
 });
