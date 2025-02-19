@@ -33,4 +33,9 @@ class Student extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
     ];
+
+    public function classes()
+    {
+        return $this->belongsToMany(Classroom::class, 'class_student', 'studentID', 'classID');
+    }
 }
